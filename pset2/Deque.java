@@ -53,18 +53,14 @@ public class Deque<Item> implements Iterable<Item> {
         {
             throw new java.lang.NullPointerException();
         }
-        if(s[index(first)] == null) 
+        if (s[index(first)] == null) 
         {
             s[index(first)] = item;
-            //System.out.println("addFirst first" + first);
-            //System.out.println("addFirst last" + last);
-            //System.out.println("addFirst capacity" + capacity);
         }
         else
         {
             if (capacity == last - first + 1) 
             {
-                //System.out.println("length: "+s.length);
                 resize(2 * s.length);
             }
             s[index(--first)] = item;
@@ -78,7 +74,7 @@ public class Deque<Item> implements Iterable<Item> {
         {
             throw new java.lang.NullPointerException();
         }
-        if(s[index(last)] == null) 
+        if (s[index(last)] == null) 
         {
             s[index(last)] = item;
         }
@@ -91,9 +87,9 @@ public class Deque<Item> implements Iterable<Item> {
     }
     
     // resize the array 
-    private void resize(int capacity)
+    private void resize(int capacityNew)
     {
-        Item[] copy = (Item[]) new Object[capacity];
+        Item[] copy = (Item[]) new Object[capacityNew];
         int size = last - first + 1;
         for (int i = 0; i < size; i++)
             copy[i] = s[index(i + first)];
@@ -101,7 +97,7 @@ public class Deque<Item> implements Iterable<Item> {
         // set index of last to N-1 and first to 0
         last = (last - first) % this.capacity;
         first = 0;
-        this.capacity = capacity;
+        this.capacity = capacityNew;
     }
     // remove and return the item from the front
     public Item removeFirst()
@@ -155,8 +151,8 @@ public class Deque<Item> implements Iterable<Item> {
     private class ListIterator implements Iterator<Item>
     {
         private int current = first;
-        public boolean hasNext() {return current <= last && s[index(current)] != null;}
-        public void remove() { throw new UnsupportedOperationException();}
+        public boolean hasNext() { return current <= last && s[index(current)] != null; }
+        public void remove() { throw new UnsupportedOperationException(); }
         public Item next()
         {
             // throw a Exception if the client calls the next() method 

@@ -28,7 +28,7 @@ public class Subset {
             {
                 k = Integer.parseInt(args[0]);
             }
-            catch(UnsupportedOperationException e) 
+            catch (UnsupportedOperationException e) 
             {
                 System.err.println("Usage java Subset k(integer)");
             }
@@ -43,7 +43,7 @@ public class Subset {
         {
             if (k == 0) return;
             StdOut.printf("%s\n", item);
-            k --;
+            k--;
             
         }
     }

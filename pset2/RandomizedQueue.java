@@ -18,7 +18,6 @@ import edu.princeton.cs.algs4.StdRandom;
 public class RandomizedQueue<Item> implements Iterable<Item> {
     // pointer for the header of linked list
     private Item[] s;
-    private int first = 0;
     private int last = 0;
     private int capacity;   // current capacity
     private int size = 0;
@@ -34,11 +33,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     {
         return size == 0;
     }
-    // return index of input by modulus 
-    private int index(int index)
-    {
-        return (index + capacity) % capacity;
-    }
+    
     // return the number of items on the deque
     public int size()
     {
@@ -53,17 +48,26 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         {
             throw new java.lang.NullPointerException();
         }
-        if(s[index(last)] == null) 
+        if (size == 0) 
         {
-            s[index(last)] = item;
+            s[0] = item;
         }
         else
         {
-            if (capacity == last - first + 1) resize(2 * capacity);
+            if (capacity == size) resize(2 * capacity);
             // add item as the last element
-            s[index(++last)] = item;
+            s[++last] = item;
         }
         size++;
+    }
+    
+    // swap the value in cell 1 and 2
+    private void swap(int index1, int index2)
+    {
+        if (index1 == index2) return;
+        Item temp = s[index2];
+        s[index2] = s[index1];
+        s[index1] = temp;
     }
     
     // remove and return a random item
@@ -75,26 +79,24 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         {
             throw new NoSuchElementException();
         }
-        Item item;
-        int i;
-        // select the random cell with non-null value uniformly
-        while(true)
+        if (size == 1)
         {
-            i = index(StdRandom.uniform(last + 1));
-            // uniform(n) generates a random integer from 0 to n - 1
-            item = s[i];
-            if (item != null) break;
+            Item temp = s[last];
+            s[last] = null;
+            size--;
+            return temp;
         }
-        s[i] = null;
-        size --;
+        // select the random cell with non-null value uniformly
+        int i = StdRandom.uniform(size);
+        // uniform(n) generates a random integer from 0 to n - 1
+        Item item = s[i];
+        swap(i, last);
+        s[last] = null;
+        last--;
+        size--;
         // resize the array if the number valid cell is small
         // System.out.println("size: " + size + "; capacity: " + capacity);
-        if (size == capacity / 4 && size > 0) resize(capacity * 3/ 4);
-        while (last != first)
-        {
-            if (s[last] == null) last--;
-            else break;
-        }
+        if (size == capacity / 4) resize(capacity * 1/ 2);
         return item;
     }
     // return (but do not remove) a random item
@@ -107,36 +109,25 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         {
             throw new NoSuchElementException();
         }
-        Item item;
-        while(true)
-        {
-            // uniform(n) generates a random integer from 1 to n - 1
-            item = s[index(StdRandom.uniform(size))];
-            if (item != null) break;
-        }
+        // uniform(n) generates a random integer from 1 to n - 1
+        Item item = s[StdRandom.uniform(size)];
         return item;
     }
 
     // resize the array 
-    private void resize(int capacity)
+    private void resize(int capacityNew)
     {
         // System.out.println("length: "+ s.length);
-        Item[] copy = (Item[]) new Object[capacity];
-        int length = last - first + 1;  //length include the removed cell
+        Item[] copy = (Item[]) new Object[capacityNew];
         // System.out.println(size);
-        for (int i = 0, j = 0; i < length; i++)
+        for (int i = 0; i < size; i++)
         {
-            if (s[i + first] != null)
-            {
-                copy[j] = s[i + first];
-                j++;
-            }
+            copy[i] = s[i];
         }
         s = copy;
         // set index of last to N-1 and first to 0
         last = size - 1;
-        first = 0;
-        this.capacity = capacity;
+        this.capacity = capacityNew;
     }
 
     // return an independent iterator over items in random order
@@ -148,67 +139,52 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     private class ListIterator implements Iterator<Item>
     {
         private int current;
-        private int first_c = first;
-        private int last_c = last;
-        private int capacity_c = capacity;
+        private int lastC = last;
         private Item[] copy;
-        private int size_c = size;
+        private int sizeC = size;
         public ListIterator()  // maybe I need to input the size of s to constructor
         {
-            copy = (Item[]) new Object[s.length];
-            System.arraycopy( s, 0, copy, 0, s.length);
+            current = 0;
+            copy = (Item[]) new Object[sizeC];
+            System.arraycopy(s, 0, copy, 0, sizeC);
+            knuthShuffle();
             // System.out.println("the construcutor is called" + s[0] + copy[0]);
         }
-        public boolean hasNext() { return size_c != 0;}
-        public void remove() { throw new UnsupportedOperationException();}
+        public boolean hasNext() { return current < sizeC; }
+        public void remove() { throw new UnsupportedOperationException(); }
         // shrink copy form array and reduce the unnecsaary cell
-        private void shrink_copy(int capacity)
+        private void knuthShuffle()
         {
-            //System.out.println("The shirnk_copy is called");
-            Item[] new_copy = (Item[]) new Object[capacity];
-            int length = last_c - first_c + 1;
-            for (int i = 0, j = 0; i < length; i++)
+            for (int i = lastC; i >= 0; i--)
             {
-                if (copy[i + first] != null)
-                {
-                    new_copy[j] = copy[i + first_c];
-                    j++;
-                }
+                int j = StdRandom.uniform(i + 1);
+                // swap the last element with a random element 
+                swapC(i, j);
             }
-            copy = new_copy;
-            last_c = size_c - 1;
-            first_c = 0;
-            capacity_c = capacity;
+        }
+        
+        private void swapC(int index1, int index2)
+        {
+            if (index1 == index2) return;
+            Item temp = copy[index2];
+            copy[index2] = copy[index1];
+            copy[index1] = temp;
         }
         
         public Item next()
         {
-            //System.out.println("copy: " + this.copy[0] + " ");
-            if (size_c == capacity_c / 2 && size_c > 0) shrink_copy(capacity_c / 2);
             // throw a Exception if the client calls the next() method 
             // in the iterator and there are no more items to return
-            int index;
-            while (true)
+            try 
             {
-                // System.out.println("last_c:" + last_c);
-                index = StdRandom.uniform(last_c + 1); 
-                // System.out.println("index: " + index);
-                // System.out.println("copy: " + copy[0] + " ");
-                if (copy[index] != null)
-                {
-                    Item item = copy[index];
-                    copy[index] = null;
-                    size_c --;
-                    // resize the array if the number valid cell is small
-                    // System.out.println("size_c: " + size_c + "; capacity_c: " + capacity_c);
-                    while (last_c != first_c)
-                    {
-                        if (copy[last_c] == null) last_c--;
-                        else break;
-                    }
-                    return item;
-                }
+                Item item = copy[current++];
+                return item;
             }
+            catch (java.util.NoSuchElementException e) 
+            {
+                System.err.println("No such element");
+            }
+            return null;
         }
     }
 
@@ -220,7 +196,14 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         // System.out.println("Test isEmpty() Expected true: " + list.isEmpty());
         list.enqueue(5);
         list.enqueue(6);
-        list.enqueue(7);
+
+        list.dequeue();
+        list.dequeue();
+        list.enqueue(3);
+        list.dequeue();
+        list.enqueue(3);
+
+        
 
         for (int i: list)
         {
