@@ -2,10 +2,11 @@
  *  This is a program of Xiaojun YU constructed on 10/11/2016
  *  The purpose of this program is to construct the datastrucutre to solve the perculate problem using union-find algorithm
  *---------------------------------------------------------*/
-//package ece651;
+
 import edu.princeton.cs.algs4.StdRandom;
 import edu.princeton.cs.algs4.StdStats;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
+
 
 public class Percolation{
     private int n;
@@ -112,7 +113,7 @@ public class Percolation{
     {
         return uf.connected(n*n, n*n+1);
     }
- /**        
+
     public static void main(String[] args) { 
         // Construct a new siteMap with every site blocked
         Percolation siteMap = new Percolation(2);
@@ -124,6 +125,5 @@ public class Percolation{
         System.out.println(siteMap.percolates()); // tests if the siteMap percolates
     }
 
- **/    
 }
 
