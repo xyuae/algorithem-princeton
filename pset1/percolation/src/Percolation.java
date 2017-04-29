@@ -1,129 +1,158 @@
 /*---------------------------------------------------------
  *  This is a program of Xiaojun YU constructed on 10/11/2016
- *  The purpose of this program is to construct the datastrucutre to solve the perculate problem using union-find algorithm
+ *  The purpose of this program is to construct the data structure to solve the perculate problem
+ *  using union-find algorithm
  *---------------------------------------------------------*/
 
-import edu.princeton.cs.algs4.StdRandom;
-import edu.princeton.cs.algs4.StdStats;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 
-public class Percolation{
-    private int n;
-    private int [][] sitemap;
-    private WeightedQuickUnionUF uf;
-    public Percolation(int n)      // create n-by-n grid, with all sites blocked
+public class Percolation {
+    private final int n;   // n by n grid
+    private int numberOfOpenSites; // numberOfOpenSites
+    private boolean isPercolate; // true if site percolate, false otherwise
+    private final boolean [] map; // array to determine if a site is open
+    private final WeightedQuickUnionUF uf; // WeightedQuickUnionUF to track if two sites is connected
+    private final WeightedQuickUnionUF uf_bw; // WeightedQuickUnionUF to track if two sites is connected, considering the backwash problem
+
+    /**
+     * Constructor
+     * Create n-by-n grid, with all sites blocked
+     * @param n side length of the grid`
+     */
+    public Percolation(int n)
     {
-        //super(n*n);
-        //throw a java.lang.IllegalArgumentException if n ≤ 0
-        if (n <= 0)
-        {
-            IllegalArgumentException e = new IllegalArgumentException("n <= 0");
-            throw e;
-        }
-        uf = new WeightedQuickUnionUF(n*n+2); //initialze n+2 array size, the extra 2 node represent the virtual-top and virtual-bottom node
-        sitemap = new int[n][n];
-        for (int i = 0; i<n; i++){
-            for (int j = 0; j<n; j++){
-                sitemap[i][j] = 0;
-            }    
-        }
-        this.n = n; 
+        // throw a java.lang.IllegalArgumentException if n <= 0
+        if (n <= 0) throw new IllegalArgumentException();
+        uf_bw = new WeightedQuickUnionUF(n*n+1); // initialize n*n + 1 array size, the extra 1 node represent the virtual-top site
+        uf = new WeightedQuickUnionUF(n*n+2); // initialize n*n + 2 array size, the extra 2 node represent the virtual-top site and the virtual-bottom site
+        map = new boolean[n * n]; // initialize n*n array size from 0 to n * n -1
+        this.n = n;
     }
+
+    /**
+     *
+     * @param row
+     * @param col
+     * @return index of the site[row][col] corresponding index in WeightedQuickUnionFind uf_bw
+     */
     private int map(int row, int col) // map the row and col into index of the list in WeightedQuickUnionUF
     {
+        if (row < 1 || row > n) throw new IndexOutOfBoundsException("row index out of bounds");
+        if (col < 1 || col > n) throw new IndexOutOfBoundsException("column index out of bounds");
         int i = row -1;
         int j = col -1;
         int index = i * n + j;
         return index;
     }
-    public void open(int row, int col) //open site(row,col) if it is not open already
+
+    /**
+     * open site(row, col) if it is not open already
+     * @param row row index
+     * @param col column index
+     */
+    public void open(final int row, final int col)
     {
-        if (isOpen(row, col)){
+        if (row < 1 || row > n) throw new IndexOutOfBoundsException("row index out of bounds");
+        if (col < 1 || col > n) throw new IndexOutOfBoundsException("column index out of bounds");
+        if (isOpen(row, col)) {
             return;
         }
-        else{
-            try{
-                int i = row -1;
-                int j = col -1;
-                sitemap[i][j] = 1; //open the site(row, col)
-                // union the vertiual top node and the current node if row = 1
-                if (row == 1) uf.union(n*n, map(row, col));
-                // union the vertiual bottom node and the current node if row = n
-                if (row == n) uf.union(n*n+1, map(row, col));
-                int [] listX ={
+        else {
+            this.numberOfOpenSites++;
+
+            map[map(row, col)] = true;
+            // union the virtual top node and the current node if row = 1
+            if (row == 1) {
+                uf_bw.union(n*n, map(row, col));
+                uf.union(n*n, map(row, col));
+            }
+            if (row == n) {
+                uf.union(n*n+1, map(row, col));
+            }
+            int [] listX = {
                     row-1, row, row+1,row
-                };
-                int [] listY = {
+            };
+            int [] listY = {
                     col, col+1,col,col-1
-                };
-                
-                for (int m = 0; m < 4; m++)
+            };
+
+            for (int m = 0; m < 4; m++)
+            {
+                // check if the row and column is within assumption, especially for boundary nodes.
+                if (listX[m] > 0 && listX[m] <= n && listY[m] >0 && listY[m] <= n)
                 {
-                    // check if the row and column is within assumption, especially for boundary nodes. 
-                    if (listX[m] > 0 && listX[m] <=n && listY[m] >0 && listY[m] <=n)
+                    // check whether the neighbour site is open
+                    if (isOpen(listX[m], listY[m]))
                     {
-                        // check whetehr the neighbour site is open
-                        if (isOpen(listX[m], listY[m]))
-                        {
-                            uf.union(map(listX[m],listY[m]),map(row,col));
-                        }
+                        uf_bw.union(map(listX[m], listY[m]), map(row, col));
+                        uf.union(map(listX[m], listY[m]), map(row, col));
+
                     }
                 }
             }
-            catch (IndexOutOfBoundsException e){
-                System.err.println("IndexOutOfBoundsException in open: " +e.getMessage());
-            }
         }
     }
-    
+
+    /**
+     * Determine if site(row, col) is open
+     * @param row row indices
+     * @param col column indices
+     * @return boolean true if site(row, col) is open, false otherwise
+     */
     public boolean isOpen(int row, int col) // is site (row, col) open?
     {
-        boolean isOpen = false;
-        try{
-            int i = row -1;
-            int j = col -1;
-            if (sitemap[i][j] == 1){
-                isOpen = true;
-            }
-        }
-        catch (IndexOutOfBoundsException e){
-            System.err.println("IndexOutOfBoundsException in isOpen: " +e.getMessage());
-        }    
-        return isOpen;
-    }
-    
-    public boolean isFull(int row, int col) // is site (row, col) full?
-    {
-        // This is implemented as the opposite of isOpen
-        boolean isFull = false;
-        try{
-            int i = row -1;
-            int j = col -1;
-            if (sitemap[i][j] == 0){
-                isFull = true;
-            }
-        }
-        catch (IndexOutOfBoundsException e){
-            System.err.println("IndexOutOfBoundsException: " +e.getMessage());
-        }
-        return isFull;
-    }
-    public boolean percolates() //does the system percolate?
-    {
-        return uf.connected(n*n, n*n+1);
+        if (row < 1 || row > n) throw new IndexOutOfBoundsException("row index out of bounds");
+        if (col < 1 || col > n) throw new IndexOutOfBoundsException("column index out of bounds");
+        return map[map(row, col)];
     }
 
-    public static void main(String[] args) { 
+    /**
+     *
+     * @return the numberOfOPenSites
+     */
+    public int numberOfOpenSites()
+    {
+        return this.numberOfOpenSites;
+    }
+
+    /**
+     * Determine if site(row, col) is connect with the top row
+     * @param row row indices
+     * @param col column indices
+     * @return boolean true if site(row, col) connect with the top row, false otherwise
+     */
+    public boolean isFull(int row, int col)
+    {
+        if (row < 1 || row > n) throw new IndexOutOfBoundsException("row index out of bounds");
+        if (col < 1 || col > n) throw new IndexOutOfBoundsException("column index out of bounds");
+        return uf_bw.connected(n * n, map(row, col));
+    }
+
+
+
+    /**
+     * does the system percolate?
+     * @return true if the system percolate, false otherwise
+     */
+    public boolean percolates()
+    {
+        if (!isPercolate) {
+            if (uf.connected(n*n, n*n+1)) this.isPercolate = true;
+        }
+        return this.isPercolate;
+    }
+
+    public static void main(String[] args) {
         // Construct a new siteMap with every site blocked
-        Percolation siteMap = new Percolation(2);
+        Percolation siteMap = new Percolation(3);
         siteMap.open(1,1);
         siteMap.open(2,2);
+        siteMap.open(2,1);
         System.out.println(siteMap.isOpen(1,1));
         System.out.println(siteMap.isOpen(2,1));
-        //System.out.println(siteMap.isOpen(1,3));
+        System.out.println(siteMap.isOpen(1,1));
         System.out.println(siteMap.percolates()); // tests if the siteMap percolates
     }
-
 }
 
