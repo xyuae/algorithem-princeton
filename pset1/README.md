@@ -1,6 +1,6 @@
 # algorithem-princeton
 ## Pset 1
-* [Lecture slides] (https://d3c33hcgiwev3.cloudfront.net/_b65e7611894ba175de27bd14793f894a_15UnionFind.pdf?Expires=1493510400&Signature=UOwElU55sfSAb73sXOUxNuFuvq3fzO62qKYJBTMK6jF23GM6PmAC~ebcsGa7OG8l695RuqEDUuwe6Vab5~UCpS1ZuuUAvv1cKB3xidBczqun~O-Q7-8wGBhdealxIooEC8YM2~1WV7G~kW5EQIv-AVfd4cxTzWKf1YxdgOuNzuU_&Key-Pair-Id=APKAJLTNE6QMUY6HBC5A)
+* [Lecture slides](https://d3c33hcgiwev3.cloudfront.net/_b65e7611894ba175de27bd14793f894a_15UnionFind.pdf?Expires=1493510400&Signature=UOwElU55sfSAb73sXOUxNuFuvq3fzO62qKYJBTMK6jF23GM6PmAC~ebcsGa7OG8l695RuqEDUuwe6Vab5~UCpS1ZuuUAvv1cKB3xidBczqun~O-Q7-8wGBhdealxIooEC8YM2~1WV7G~kW5EQIv-AVfd4cxTzWKf1YxdgOuNzuU_&Key-Pair-Id=APKAJLTNE6QMUY6HBC5A)
 
 # Union Find
 * UF(int N) initialzie union-find data structure with N objects
