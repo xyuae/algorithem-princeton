@@ -3,8 +3,6 @@ import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.util.*;
-//import edu.princeton.cs.algs4.SET;
 
 /**
  * Created by Xiaojun YU on 2017-02-20.
@@ -23,12 +21,16 @@ public class Solver {
             return curr;
         }
 
+        private Node getPre() {
+            return pre;
+        }
+
         private int getMoves() {
             return moves;
         }
 
         private int heuristic(){
-            return this.curr.hamming();
+            return this.curr.manhattan();
         }
 
         @Override
@@ -37,17 +39,11 @@ public class Solver {
             // , 0, -1
             int thisCost = this.moves + this.heuristic();
             int thatCost = that.moves + that.heuristic();
-            if (thisCost >= thatCost){
-                return 1;
-            }
-            else {
-                return -1;
-            }
+            return thisCost - thatCost;
         }
     }
-
+    private Stack<Board> res = new Stack<Board>();
     private boolean solvable = false;
-    private Node result = null;
     public Solver(Board initial)
     // find a solution to the initial board (using the A* algorithm)
     {
@@ -56,8 +52,8 @@ public class Solver {
         if (initial == null) {
             throw new NullPointerException();
         }
-        List<Board> visited = new ArrayList<Board>();
-        List<Board> twinVisited = new ArrayList<Board>();
+        //List<Board> visited = new ArrayList<Board>();
+        //List<Board> twinVisited = new ArrayList<Board>();
         minPQ = new MinPQ<Node>();
         minPQ.insert(new Node(initial, 0, null));
         twinMinPQ = new MinPQ<Node>();
@@ -69,11 +65,18 @@ public class Solver {
                 if (current.isGoal()) {
                     return;
                 }
-                twinVisited.add(current);
+                //twinVisited.add(current);
                 int move = root.getMoves();
+                Node preNode = root.getPre();
+                Board pre;
+                if (preNode != null){
+                    pre = preNode.getCurr();
+                } else {
+                    pre = null;
+                }
                 for (Board neighbour : current.neighbors())
                 {
-                    if (!twinVisited.contains(neighbour)) {
+                    if (!neighbour.equals(pre)) {
                         twinMinPQ.insert(new Node(neighbour, move+1, root));
                     }
                 }
@@ -83,14 +86,26 @@ public class Solver {
                 Board current = root.getCurr();
                 if (current.isGoal()) {
                     solvable = true;
-                    result = root;
+                    res.push(current);
+                    Node temp = root;
+                    while (temp.pre != null) {
+                        temp = temp.pre;
+                        res.push(temp.curr);
+                    }
                     return;
                 }
-                visited.add(current);
+                //visited.add(current);
                 int move = root.getMoves();
+                Node preNode = root.getPre();
+                Board pre;
+                if (preNode != null){
+                    pre = preNode.getCurr();
+                } else {
+                    pre = null;
+                }
                 for (Board neighbour : current.neighbors())
                 {
-                    if (!visited.contains(neighbour)) {
+                    if (!neighbour.equals(pre)) {
                         minPQ.insert(new Node(neighbour, move+1, root));
                     }
                 }
@@ -107,20 +122,13 @@ public class Solver {
     }
     public int moves()                     // min number of moves to solve initial board; -1 if unsolvable
     {
-        if (solvable) return result.moves;
+        if (solvable) return res.size()-1;
         return -1;
     }
     public Iterable<Board> solution()      // sequence of boards in a shortest solution; null if unsolvable
     {
         if(solvable)
         {
-            Stack<Board> res = new Stack<Board>();
-            res.push(result.getCurr());
-            Node temp = result;
-            while (temp.pre != null){
-                temp = temp.pre;
-                res.push(temp.curr);
-            }
             return res;
         }
         return null;

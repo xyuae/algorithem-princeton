@@ -1,18 +1,30 @@
 // import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdRandom;
+import edu.princeton.cs.algs4.In;
 
 /**
  * Created by Xiaojun YU on 2017-02-11.
  */
 public class Board{
-    private final int[][] board;
+    private final char[][] board;
     private final int n;
 
     public Board(int[][] blocks)           // construct a board from an n-by-n array of blocks
     {
         this.n = blocks.length;
-        board = new int[n][n];
+        board = new char[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                board[i][j] = (char)blocks[i][j];
+            }
+        }
+    }
+
+    private Board(char[][] blocks)
+    {
+        this.n = blocks.length;
+        board = new char[n][n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 board[i][j] = blocks[i][j];
@@ -68,7 +80,7 @@ public class Board{
         if(it < 0 || it >= n || jt < 0 || jt >= n) {
             return false;
         }
-        int temp = board[i][j];
+        char temp = board[i][j];
         board[i][j] = board[it][jt];
         board[it][jt] = temp;
         return true;
@@ -168,7 +180,7 @@ public class Board{
         sb.append(n + "\n");
         for (int i = 0; i < n; i++) {
             for(int j = 0; j < n; j++) {
-                sb.append(this.board[i][j]).append(" ");
+                sb.append((int)this.board[i][j]).append(" ");
             }
             sb.append("\n");
         }
@@ -177,7 +189,7 @@ public class Board{
 
     public static void main(String[] args) // unit tests (not graded)
     {
-        /*
+
         if (args.length == 0) return;
         In in = new In(args[0]);
         int n = in.readInt();
@@ -199,7 +211,7 @@ public class Board{
         System.out.println("Test manhattan");
         assert initial.manhattan() == 7;
         System.out.println("Manhattan passes");
-        */
+
     }
 
 
